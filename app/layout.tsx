@@ -58,11 +58,7 @@ export const metadata: Metadata = {
     },
   },
   manifest: "/site.webmanifest",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#1e1e2f" },
-  ],
-  colorScheme: "dark light",
+
   category: "technology",
 }
 
@@ -77,6 +73,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#1e1e2f" },
   ],
+  colorScheme: "dark light",
 }
 
 export default function RootLayout({

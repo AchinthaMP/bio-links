@@ -128,8 +128,8 @@ export default function ProfileLanding() {
                               className="w-full h-full rounded-full object-cover"
                             />
                             <Image
-                              src="/bush_camper.png"
-                              alt="Avatar Decoration - Bush Camper"
+                              src="/spirit_embers.png"
+                              alt="Avatar Decoration - Spirit Embers"
                               width={120}
                               height={120}
                               className="absolute top-0 left-0 w-full h-full rounded-full object-cover pointer-events-none z-10"
