@@ -12,7 +12,7 @@ interface Lyric {
 
 interface LyricsDisplayProps {
   lyrics: Lyric[]
-  audioRef: React.RefObject<HTMLAudioElement>
+  audioRef: React.RefObject<HTMLMediaElement>
   hasEntered: boolean
 }
 

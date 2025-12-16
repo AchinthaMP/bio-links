@@ -12,7 +12,7 @@ import { Volume2, VolumeX, Settings, Monitor, Palette, RotateCcw } from "lucide-
 
 interface MediaControlsProps {
     videoRef: React.RefObject<HTMLVideoElement>
-    audioRef: React.RefObject<HTMLAudioElement>
+    audioRef: React.RefObject<HTMLMediaElement>
     hasEntered: boolean
 }
 

@@ -17,11 +17,11 @@ interface SocialLinksProps {
 }
 
 const defaultLinks = {
-  github: "https://github.com/VikumKarunathilake",
-  steam: "https://steamcommunity.com/id/Vikum_K/",
-  spotify: "https://open.spotify.com/user/31q2s45y56ymwfy5zhlbfqwkzb3y",
-  youtube: "https://www.youtube.com/@Vikum_K",
-  tiktok: "https://www.youtube.com/@Vikum_K",
+  github: "https://github.com/AchinthaMP",
+  steam: "https://steamcommunity.com/profiles/76561199754955028/",
+  spotify: "https://open.spotify.com/user/31achqhcnx22advke36lszbn2bka?si=d0e3f1c1d4aa47f0",
+  youtube: "https://www.youtube.com/@Mahiru_Edits",
+  tiktok: "https://www.tiktok.com/@mahiru_e",
 }
 
 export function SocialLinks({ links = defaultLinks, delay = 1 }: SocialLinksProps) {

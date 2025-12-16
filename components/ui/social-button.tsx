@@ -33,7 +33,7 @@ export function SocialButton({ href, icon: Icon, label, variant = "default", siz
     >
       <Button
         variant="outline"
-        size={size}
+        size={size === "md" ? "default" : size}
         className={`text-white hover:scale-110 transition-all duration-300 ${variantStyles[variant]}`}
         asChild
       >

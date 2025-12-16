@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 // Your Discord User ID - Replace with your actual Discord user ID
-const DISCORD_USER_ID = "781158548364853270"
+const DISCORD_USER_ID = "958696784421601290"
 
 interface LanyardDiscordUser {
   id: string

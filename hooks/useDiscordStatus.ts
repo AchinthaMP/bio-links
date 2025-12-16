@@ -29,6 +29,7 @@ interface DiscordActivity {
     small_text?: string
   }
   platform?: string
+  application_id?: string
 }
 
 interface SpotifyData {
