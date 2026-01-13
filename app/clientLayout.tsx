@@ -22,7 +22,7 @@ export default function ClientLayout({
                 />
             </head>
             <body
-                className="antialiased select-none"
+                className="antialiased select-none bg-black"
                 onContextMenu={(e: React.MouseEvent<HTMLBodyElement>) => e.preventDefault()}
                 onDragStart={(e: React.DragEvent<HTMLBodyElement>) => e.preventDefault()}
                 onMouseDown={(e: React.MouseEvent<HTMLBodyElement>) => e.preventDefault()} // Replaces onSelectStart

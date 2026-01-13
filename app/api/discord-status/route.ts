@@ -166,8 +166,15 @@ export async function GET() {
       (activity) => activity.type !== 2 && activity.name !== "Spotify",
     )
 
-    // Get the most relevant activity (usually the first non-Spotify one)
-    const primaryActivity = relevantActivities[0] || null
+    // Get the most relevant activity
+    // Prioritize Gaming (0), Streaming (1), and Competing (5) over Custom Status (4)
+    const prioritizedActivities = [...relevantActivities].sort((a, b) => {
+      if (a.type === 4 && b.type !== 4) return 1
+      if (a.type !== 4 && b.type === 4) return -1
+      return 0
+    })
+
+    const primaryActivity = prioritizedActivities[0] || null
 
     const responseData = {
       user: {
@@ -190,6 +197,7 @@ export async function GET() {
           timestamps: activity.timestamps,
           assets: activity.assets,
           platform: activity.platform,
+          application_id: activity.application_id,
         })),
         primaryActivity,
         spotify: data.listening_to_spotify ? data.spotify : null,

@@ -58,6 +58,9 @@ export const metadata: Metadata = {
     },
   },
   manifest: "/site.webmanifest",
+  icons: {
+    icon: "/fvcon.jpeg",
+  },
 
   category: "technology",
 }

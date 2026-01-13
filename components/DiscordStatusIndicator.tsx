@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { RefreshCw, Wifi, WifiOff, AlertCircle, Music, Gamepad2, Code, Monitor, ExternalLink, Globe, Smartphone } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 const statusConfig = {
   online: {
@@ -62,6 +62,24 @@ function formatTimestamp(timestamp: number): string {
 export default function DiscordStatusIndicator() {
   const { status, loading, error, refetch, isOnline, lastFetchTime } = useDiscordStatus(30000)
   const [imageError, setImageError] = useState(false)
+  const [activeActivity, setActiveActivity] = useState<'spotify' | 'primary'>('spotify')
+
+  const spotify = status?.presence.spotify
+  const primaryActivity = status?.presence.primaryActivity
+
+  // Activity cycling logic
+  useEffect(() => {
+    if (spotify && primaryActivity) {
+      const interval = setInterval(() => {
+        setActiveActivity(prev => prev === 'spotify' ? 'primary' : 'spotify')
+      }, 5000)
+      return () => clearInterval(interval)
+    } else if (spotify) {
+      setActiveActivity('spotify')
+    } else if (primaryActivity) {
+      setActiveActivity('primary')
+    }
+  }, [spotify, primaryActivity])
 
   if (loading && !status) {
     return (
@@ -120,8 +138,6 @@ export default function DiscordStatusIndicator() {
   if (!status) return null
 
   const currentStatus = statusConfig[status.presence.status]
-  const primaryActivity = status.presence.primaryActivity
-  const spotify = status.presence.spotify
 
   return (
     <TooltipProvider>
@@ -200,108 +216,99 @@ export default function DiscordStatusIndicator() {
           </div>
         </div>
 
-        {/* Spotify Activity */}
-        <AnimatePresence>
-          {spotify && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className={`${currentStatus.bgColor} backdrop-blur-sm rounded-lg p-3 border ${currentStatus.borderColor}`}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="rounded-lg overflow-hidden flex-shrink-0">
-                  <Image
-                    src={spotify.album_art_url || "/placeholder.svg"}
-                    alt={`${spotify.album} cover`}
-                    width={80}
-                    height={80}
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-                <div className="flex-1 min-w-0 text-left"> {/* <-- ensure text aligns left */}
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Music className="w-3 h-3 text-green-400" />
-                    <span className="text-green-300 text-xs font-medium tracking-wide">Spotify</span>
-                  </div>
-                  <p className="text-white text-sm font-medium truncate">{spotify.song}</p>
-                  <p className="text-white/70 text-xs truncate">by {spotify.artist}</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <AnimatePresence>
-          {primaryActivity && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className={`${currentStatus.bgColor} backdrop-blur-sm rounded-lg p-3 border ${currentStatus.borderColor}`}
-            >
-              <div className="flex gap-4">
-                {/* Activity Image */}
-                {primaryActivity.assets?.large_image && (
-                  <div className="rounded-lg overflow-hidden flex-shrink-0">
+        {/* Activity Cycling Container */}
+        <div className={`relative transition-all duration-500 ${ (spotify || primaryActivity) ? "min-h-[100px] mt-4" : "h-0 opacity-0" }`}>
+          <AnimatePresence mode="wait">
+            {spotify && (activeActivity === 'spotify') ? (
+              <motion.div
+                key="spotify"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className={`${currentStatus.bgColor} backdrop-blur-sm rounded-lg p-3 border ${currentStatus.borderColor}`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="rounded-lg overflow-hidden flex-shrink-0 w-16 h-16 relative">
                     <Image
-                      src={
-                        primaryActivity.assets.large_image.startsWith('mp:external/')
-                          ? `https://media.discordapp.net/external/${primaryActivity.assets.large_image.replace('mp:external/', '')}`
-                          : `https://cdn.discordapp.com/app-assets/${primaryActivity.application_id}/${primaryActivity.assets.large_image}.png`
-                      }
-                      alt={primaryActivity.assets.large_text || primaryActivity.name}
-                      width={80}
-                      height={80}
+                      src={spotify.album_art_url || "/placeholder.svg"}
+                      alt={`${spotify.album} cover`}
+                      fill
                       className="object-cover"
                       unoptimized
                     />
                   </div>
-                )}
-
-                <div className="flex-1 min-w-0">
-                  {/* Activity Header */}
-                  <div className="flex items-center gap-2 mb-1">
-                    {(() => {
-                      const IconComponent =
-                        activityTypeIcons[primaryActivity.type as keyof typeof activityTypeIcons] || Monitor;
-                      return <IconComponent className="w-4 h-4 text-indigo-400 flex-shrink-0" />;
-                    })()}
-                    <span className="text-xs font-semibold text-indigo-300 tracking-wider truncate">
-                      {primaryActivity.type === 0
-                        ? "Playing"
-                        : primaryActivity.type === 1
-                          ? "Streaming"
-                          : "Activity"}
-                    </span>
-                    {primaryActivity.timestamps?.start && (
-                      <span className="text-xs text-gray-400 ml-auto">
-                        {formatTimestamp(primaryActivity.timestamps.start)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Activity Details */}
-                  <div className="space-y-1">
-                    <h3 className="text-white font-medium text-sm leading-tight truncate">
-                      {primaryActivity.name}
-                    </h3>
-                    {primaryActivity.details && (
-                      <p className="text-gray-300 text-xs leading-tight truncate">
-                        {primaryActivity.details}
-                      </p>
-                    )}
-                    {primaryActivity.state && (
-                      <p className="text-gray-400 text-xs leading-tight truncate">
-                        {primaryActivity.state}
-                      </p>
-                    )}
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Music className="w-3 h-3 text-green-400" />
+                      <span className="text-green-300 text-[10px] font-medium tracking-wide font-mono uppercase">Spotify</span>
+                    </div>
+                    <p className="text-white text-sm font-bold truncate">{spotify.song}</p>
+                    <p className="text-white/60 text-xs truncate">{spotify.artist}</p>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            ) : primaryActivity && (activeActivity === 'primary') ? (
+              <motion.div
+                key="primary"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className={`${currentStatus.bgColor} backdrop-blur-sm rounded-lg p-3 border ${currentStatus.borderColor}`}
+              >
+                <div className="flex gap-4">
+                  {primaryActivity.assets?.large_image && (
+                    <div className="rounded-lg overflow-hidden flex-shrink-0 w-16 h-16 relative">
+                      <Image
+                        src={
+                          primaryActivity.assets.large_image.startsWith('mp:external/')
+                            ? `https://media.discordapp.net/external/${primaryActivity.assets.large_image.replace('mp:external/', '')}`
+                            : `https://cdn.discordapp.com/app-assets/${primaryActivity.application_id}/${primaryActivity.assets.large_image}.png`
+                        }
+                        alt={primaryActivity.assets.large_text || primaryActivity.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {(() => {
+                        const IconComponent = activityTypeIcons[primaryActivity.type as keyof typeof activityTypeIcons] || Monitor;
+                        return <IconComponent className="w-3 h-3 text-indigo-400 flex-shrink-0" />;
+                      })()}
+                      <span className="text-[10px] font-bold text-indigo-300 tracking-wider font-mono uppercase">
+                        {primaryActivity.type === 0 ? "Playing" : primaryActivity.type === 1 ? "Streaming" : "Activity"}
+                      </span>
+                      {primaryActivity.timestamps?.start && (
+                        <span className="text-[9px] text-gray-400 ml-auto font-mono">
+                          {formatTimestamp(primaryActivity.timestamps.start)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <h3 className="text-white font-bold text-sm leading-tight truncate">
+                        {primaryActivity.name}
+                      </h3>
+                      {primaryActivity.details && (
+                        <p className="text-gray-300 text-[10px] leading-tight truncate opacity-80">
+                          {primaryActivity.details}
+                        </p>
+                      )}
+                      {primaryActivity.state && (
+                        <p className="text-gray-400 text-[10px] leading-tight truncate italic">
+                          {primaryActivity.state}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
 
         {/* Error Badge */}
         <AnimatePresence>
