@@ -1,16 +1,17 @@
 "use client"
 
 import type React from "react"
-import TrailingCursor from "@/components/use-canvasCursor"
 import "./globals.css"
 
 export default function ClientLayout({
     children,
+    className = "",
 }: Readonly<{
     children: React.ReactNode
+    className?: string
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" suppressHydrationWarning className={className}>
             <head>
                 <meta name="msapplication-TileColor" content="#8b5cf6" />
                 <meta name="msapplication-config" content="/browserconfig.xml" />
@@ -36,7 +37,6 @@ export default function ClientLayout({
                 }}
             >
                 {children}
-                <TrailingCursor />
 
                 {/* Disable right-click and other interactions */}
                 <script

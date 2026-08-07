@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { useActivityHistory, HistoryItem } from "@/hooks/useActivityHistory"
 import { useDiscordStatus } from "@/hooks/useDiscordStatus"
 import { Music, History, ExternalLink, Hash, Gamepad2, Zap, MoreHorizontal } from "lucide-react"
@@ -32,7 +32,7 @@ export default function ActivityHistory() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="group relative flex items-center gap-4 p-4 rounded-xl bg-[#1e1f22]/60 border border-white/5 hover:bg-[#2b2d31]/80 transition-all duration-200"
+            className="group relative flex items-center gap-4 p-4 rounded-xl bg-black/30 border border-white/10 hover:bg-white/[0.06] transition-all duration-200"
           >
             {/* Large Activity Icon */}
             <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-black/20">

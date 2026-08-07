@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "motion/react"
 import { useDiscordStatus } from "@/hooks/useDiscordStatus"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -116,7 +116,7 @@ export default function DiscordStatusIndicator() {
             </p>
           )}
           {error.code === "USER_NOT_FOUND" && (
-            <div className="mt-2 p-2 bg-blue-500/20 border border-blue-500/30 rounded text-blue-300">
+            <div className="mt-2 p-2 bg-purple-500/15 border border-purple-500/30 rounded text-purple-200">
               <p className="text-xs mb-1">To fix this:</p>
               <ol className="text-xs space-y-1 list-decimal list-inside">
                 <li>Make sure your Discord profile is public</li>

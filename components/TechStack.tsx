@@ -1,15 +1,15 @@
-"use client"
+﻿"use client"
 
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import {
     SiAdobeaftereffects,
     SiAdobepremierepro,
     SiAdobephotoshop,
     SiBlender,
-    SiSony,
     SiDavinciresolve
 } from "react-icons/si"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Marquee from "@/components/Marquee"
 
 const tools = [
     {
@@ -46,37 +46,24 @@ const tools = [
 
 export default function TechStack() {
     return (
-        <div className="flex flex-col items-center justify-center space-y-4 my-6">
+        <div className="flex flex-col items-center justify-center space-y-5 my-6">
             <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
                 className="text-white/40 text-xs uppercase tracking-widest font-medium"
             >
                 Software Arsenal
             </motion.p>
 
             <TooltipProvider delayDuration={100}>
-                <div className="flex flex-wrap gap-4 justify-center">
-                    {tools.map((tool, index) => (
-                        <motion.div
-                            key={tool.name}
-                            initial={{ scale: 0, rotate: -20 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{
-                                delay: 0.9 + (index * 0.1),
-                                type: "spring",
-                                stiffness: 260,
-                                damping: 20
-                            }}
-                        >
+                <Marquee speed={26} className="w-full [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+                    {tools.map((tool) => (
+                        <div key={tool.name} className="px-3">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className={`
-                    p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md
-                    transition-all duration-300 hover:scale-110 hover:-translate-y-1
-                    ${tool.color} cursor-pointer group
-                  `}>
+                                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:-translate-y-1 cursor-pointer group">
                                         <tool.icon className="w-6 h-6" />
                                     </div>
                                 </TooltipTrigger>
@@ -87,9 +74,9 @@ export default function TechStack() {
                                     </div>
                                 </TooltipContent>
                             </Tooltip>
-                        </motion.div>
+                        </div>
                     ))}
-                </div>
+                </Marquee>
             </TooltipProvider>
         </div>
     )

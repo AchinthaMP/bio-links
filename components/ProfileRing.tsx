@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 
 export default function ProfileRing() {
   return (
@@ -19,9 +19,9 @@ export default function ProfileRing() {
         />
         <defs>
           <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#3b82f6" />
+            <stop offset="0%" stopColor="#ffffff" />
             <stop offset="50%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#ec4899" />
+            <stop offset="100%" stopColor="#ffffff" />
           </linearGradient>
         </defs>
       </svg>

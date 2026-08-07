@@ -3,43 +3,66 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useDragControls } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Volume2, VolumeX, Settings, Monitor, Palette, RotateCcw } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Volume2, VolumeX, Settings, Monitor, Sparkles, RotateCcw, Play, Pause, Image as ImageIcon, GripVertical, Menu, X } from "lucide-react"
 
 interface MediaControlsProps {
     videoRef: React.RefObject<HTMLVideoElement>
     audioRef: React.RefObject<HTMLMediaElement>
     hasEntered: boolean
+    isPlaying: boolean
+    isMuted: boolean
+    volume: number
+    bgMode: "video" | "still"
+    showAmbient: boolean
+    onTogglePlay: () => void
+    onToggleMute: () => void
+    onVolumeChange: (value: number) => void
+    onToggleBgMode: () => void
+    onToggleAmbient: () => void
 }
 
 interface SettingsState {
-    volume: number
     brightness: number
     contrast: number
     saturation: number
     blur: number
     autoplay: boolean
-    showParticles: boolean
+    hasSeenStillImage: boolean
 }
 
 const defaultSettings: SettingsState = {
-    volume: 3,
     brightness: 50,
     contrast: 100,
     saturation: 100,
     blur: 0,
     autoplay: true,
-    showParticles: true,
+    hasSeenStillImage: false,
 }
 
-export default function MediaControls({ videoRef, audioRef, hasEntered }: MediaControlsProps) {
-    const [isMuted, setIsMuted] = useState(false)
+export default function MediaControls({
+    videoRef,
+    hasEntered,
+    isPlaying,
+    isMuted,
+    volume,
+    bgMode,
+    showAmbient,
+    onTogglePlay,
+    onToggleMute,
+    onVolumeChange,
+    onToggleBgMode,
+    onToggleAmbient,
+}: MediaControlsProps) {
     const [showSettings, setShowSettings] = useState(false)
+    const [isExpanded, setIsExpanded] = useState(true)
     const [settings, setSettings] = useState<SettingsState>(defaultSettings)
+    const dragControls = useDragControls()
 
     // Load settings from localStorage on mount
     useEffect(() => {
@@ -67,20 +90,6 @@ export default function MediaControls({ videoRef, audioRef, hasEntered }: MediaC
         }
     }, [settings.brightness, settings.contrast, settings.saturation, settings.blur, videoRef])
 
-    // Handle volume changes
-    useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.volume = settings.volume / 100
-        }
-    }, [settings.volume, audioRef])
-
-    const toggleMute = () => {
-        if (audioRef.current) {
-            audioRef.current.muted = !isMuted
-            setIsMuted(!isMuted)
-        }
-    }
-
     const resetSettings = () => {
         setSettings(defaultSettings)
     }
@@ -89,205 +98,235 @@ export default function MediaControls({ videoRef, audioRef, hasEntered }: MediaC
         setSettings((prev) => ({ ...prev, [key]: value }))
     }
 
+    const handleToggleBgMode = () => {
+        onToggleBgMode()
+        if (!settings.hasSeenStillImage) {
+            updateSetting("hasSeenStillImage", true)
+        }
+    }
+
     if (!hasEntered) return null
+
+    const dockBtn = "rounded-full bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 hover:border-purple-400/50 transition-all duration-300"
 
     return (
         <>
-            {/* Control Buttons */}
-            <div className="fixed top-4 left-4 z-40 flex space-x-2">
-                {/* Mute Button */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
-                >
-                    <Button
-                        onClick={toggleMute}
-                        variant="outline"
-                        size="sm"
-                        className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all duration-300"
+            {/* Control Dock */}
+            <motion.div
+                layout
+                drag
+                dragControls={dragControls}
+                dragListener={false}
+                dragMomentum={false}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 z-40 flex flex-row items-center gap-1 sm:gap-1.5 px-2 py-2 sm:px-2.5 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+            >
+                {/* Drag Handle & Expand Toggle */}
+                <div className="flex items-center">
+                    <div 
+                        className="flex items-center justify-center w-6 h-8 text-white/30 hover:text-white/70 cursor-grab active:cursor-grabbing touch-none"
+                        onPointerDown={(e) => dragControls.start(e)}
                     >
-                        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                        <GripVertical className="w-4 h-4" />
+                    </div>
+                    <Button onClick={() => setIsExpanded(!isExpanded)} variant="ghost" size="sm" className={dockBtn} title={isExpanded ? "Collapse" : "Expand"}>
+                        {isExpanded ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
                     </Button>
-                </motion.div>
+                </div>
 
-                {/* Settings Button */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7, duration: 0.6 }}
-                >
-                    <Button
-                        onClick={() => setShowSettings(!showSettings)}
-                        variant="outline"
-                        size="sm"
-                        className={`bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all duration-300 ${showSettings ? "bg-white/20" : ""
-                            }`}
-                    >
-                        <Settings className="w-4 h-4" />
-                    </Button>
-                </motion.div>
-            </div>
+                <AnimatePresence initial={false}>
+                    {isExpanded && (
+                        <motion.div
+                            initial={{ opacity: 0, width: 0, filter: "blur(4px)" }}
+                            animate={{ opacity: 1, width: "auto", filter: "blur(0px)" }}
+                            exit={{ opacity: 0, width: 0, filter: "blur(4px)" }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="flex flex-row items-center gap-1 sm:gap-1.5 overflow-hidden whitespace-nowrap"
+                        >
+                            {/* Play / Pause */}
+                            <Button onClick={onTogglePlay} variant="ghost" size="sm" title={isPlaying ? "Pause" : "Play"} className={dockBtn}>
+                                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                            </Button>
 
-            {/* Settings Panel */}
-            <AnimatePresence>
-                {showSettings && (
-                    <motion.div
-                        initial={{ opacity: 0, x: -300 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -300 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="fixed top-16 left-4 z-40 w-80"
-                    >
-                        <Card className="bg-[#2e3050]/90 backdrop-blur-md border-white/20 shadow-2xl">
-                            <div className="p-6 space-y-6">
-                                {/* Header */}
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-white font-semibold text-lg">Settings</h3>
-                                    <Button
-                                        onClick={resetSettings}
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-white/60 hover:text-white hover:bg-white/10"
-                                    >
-                                        <RotateCcw className="w-4 h-4 mr-1" />
-                                        Reset
-                                    </Button>
-                                </div>
+                            {/* Mute */}
+                            <Button onClick={onToggleMute} variant="ghost" size="sm" title={isMuted ? "Unmute" : "Mute"} className={dockBtn}>
+                                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                            </Button>
 
-                                {/* Audio Settings */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Volume2 className="w-4 h-4 text-blue-400" />
-                                        <span className="text-white text-sm font-medium">Audio</span>
-                                    </div>
-
-                                    <div className="space-y-3 pl-6">
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-white/80 text-sm">Volume</label>
-                                                <span className="text-white/60 text-sm">{settings.volume}%</span>
-                                            </div>
-                                            <Slider
-                                                value={[settings.volume]}
-                                                onValueChange={([value]) => updateSetting("volume", value)}
-                                                max={100}
-                                                step={1}
-                                                className="w-full"
-                                            />
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-white/80 text-sm">Autoplay</label>
-                                            <Switch
-                                                checked={settings.autoplay}
-                                                onCheckedChange={(checked) => updateSetting("autoplay", checked)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Video Settings */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Monitor className="w-4 h-4 text-purple-400" />
-                                        <span className="text-white text-sm font-medium">Video</span>
-                                    </div>
-
-                                    <div className="space-y-3 pl-6">
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-white/80 text-sm">Brightness</label>
-                                                <span className="text-white/60 text-sm">{settings.brightness}%</span>
-                                            </div>
-                                            <Slider
-                                                value={[settings.brightness]}
-                                                onValueChange={([value]) => updateSetting("brightness", value)}
-                                                max={200}
-                                                min={10}
-                                                step={5}
-                                                className="w-full"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-white/80 text-sm">Contrast</label>
-                                                <span className="text-white/60 text-sm">{settings.contrast}%</span>
-                                            </div>
-                                            <Slider
-                                                value={[settings.contrast]}
-                                                onValueChange={([value]) => updateSetting("contrast", value)}
-                                                max={200}
-                                                min={50}
-                                                step={5}
-                                                className="w-full"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-white/80 text-sm">Saturation</label>
-                                                <span className="text-white/60 text-sm">{settings.saturation}%</span>
-                                            </div>
-                                            <Slider
-                                                value={[settings.saturation]}
-                                                onValueChange={([value]) => updateSetting("saturation", value)}
-                                                max={200}
-                                                min={0}
-                                                step={5}
-                                                className="w-full"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-white/80 text-sm">Blur</label>
-                                                <span className="text-white/60 text-sm">{settings.blur}px</span>
-                                            </div>
-                                            <Slider
-                                                value={[settings.blur]}
-                                                onValueChange={([value]) => updateSetting("blur", value)}
-                                                max={10}
-                                                min={0}
-                                                step={0.5}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Visual Effects */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Palette className="w-4 h-4 text-green-400" />
-                                        <span className="text-white text-sm font-medium">Effects</span>
-                                    </div>
-
-                                    <div className="space-y-3 pl-6">
-                                        <div className="flex items-center justify-between">
-                                            <label className="text-white/80 text-sm">Particle Effects</label>
-                                            <Switch
-                                                checked={settings.showParticles}
-                                                onCheckedChange={(checked) => updateSetting("showParticles", checked)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                            {/* Horizontal Volume */}
+                            <div className="flex w-16 sm:w-24 items-center justify-center mx-0.5 sm:mx-1">
+                                <Slider
+                                    value={[volume]}
+                                    onValueChange={([value]) => onVolumeChange(value)}
+                                    max={100}
+                                    step={1}
+                                    className="w-full"
+                                />
                             </div>
-                        </Card>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
-            {/* Click outside to close settings */}
-            {showSettings && (
-                <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => setShowSettings(false)}
-                    style={{ background: "transparent" }}
-                />
-            )}
+                            {/* Background: Video / Still toggle */}
+                            <div className="relative">
+                                {bgMode === "video" && !settings.hasSeenStillImage && (
+                                    <span className="absolute top-0.5 right-0.5 flex h-2 w-2 z-10 pointer-events-none">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></span>
+                                    </span>
+                                )}
+                                <Button onClick={handleToggleBgMode} variant="ghost" size="sm" title={bgMode === "video" ? "Show still image" : "Show video"} className={`${dockBtn} ${bgMode === "still" ? "bg-purple-500/15 border-purple-400/50 text-white" : "hover:border-purple-400/50 hover:text-purple-300"}`}>
+                                    {bgMode === "video" ? <ImageIcon className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
+                                </Button>
+                            </div>
+
+                            {/* Ambient toggle */}
+                            <Button onClick={onToggleAmbient} variant="ghost" size="sm" title={showAmbient ? "Hide ambient effects" : "Show ambient effects"} className={`${dockBtn} ${showAmbient ? "bg-purple-500/15 border-purple-400/50 text-white" : ""}`}>
+                                <Sparkles className="w-4 h-4" />
+                            </Button>
+
+                            {/* Settings */}
+                            <Popover open={showSettings} onOpenChange={setShowSettings}>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="sm" title="Settings" className={`${dockBtn} ${showSettings ? "bg-purple-500/15 border-purple-400/50 text-white" : ""}`}>
+                                        <Settings className="w-4 h-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent 
+                                    side="top" 
+                                    align="end" 
+                                    sideOffset={24}
+                                    className="p-0 border-none bg-transparent shadow-none w-[22rem] max-w-[calc(100vw-2rem)]"
+                                >
+                                    <Card className="rounded-2xl border-purple-500/25 bg-black/70 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.8),0_0_40px_rgba(168,85,247,0.12)]">
+                                        <div className="p-6 space-y-6">
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2.5">
+                                                    <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+                                                        <Settings className="w-4 h-4 text-white" />
+                                                    </span>
+                                                    <h3 className="font-display text-lg font-semibold text-white tracking-tight">Settings</h3>
+                                                </div>
+                                                <Button
+                                                    onClick={resetSettings}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-white/50 hover:text-white hover:bg-white/10"
+                                                >
+                                                    <RotateCcw className="w-4 h-4 mr-1" />
+                                                    Reset
+                                                </Button>
+                                            </div>
+
+                                            {/* Audio Settings */}
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Volume2 className="w-4 h-4 text-blue-400" />
+                                                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">Audio</span>
+                                                </div>
+
+                                                <div className="space-y-3 pl-6">
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <label className="text-white/80 text-sm">Volume</label>
+                                                            <span className="font-mono text-white/60 text-xs tabular-nums">{volume}%</span>
+                                                        </div>
+                                                        <Slider
+                                                            value={[volume]}
+                                                            onValueChange={([value]) => onVolumeChange(value)}
+                                                            max={100}
+                                                            step={1}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-white/80 text-sm">Autoplay</label>
+                                                        <Switch
+                                                            checked={settings.autoplay}
+                                                            onCheckedChange={(checked) => updateSetting("autoplay", checked)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Video Settings */}
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Monitor className="w-4 h-4 text-purple-400" />
+                                                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">Video</span>
+                                                </div>
+
+                                                <div className="space-y-3 pl-6">
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <label className="text-white/80 text-sm">Brightness</label>
+                                                            <span className="font-mono text-white/60 text-xs tabular-nums">{settings.brightness}%</span>
+                                                        </div>
+                                                        <Slider
+                                                            value={[settings.brightness]}
+                                                            onValueChange={([value]) => updateSetting("brightness", value)}
+                                                            max={200}
+                                                            min={10}
+                                                            step={5}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <label className="text-white/80 text-sm">Contrast</label>
+                                                            <span className="font-mono text-white/60 text-xs tabular-nums">{settings.contrast}%</span>
+                                                        </div>
+                                                        <Slider
+                                                            value={[settings.contrast]}
+                                                            onValueChange={([value]) => updateSetting("contrast", value)}
+                                                            max={200}
+                                                            min={50}
+                                                            step={5}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <label className="text-white/80 text-sm">Saturation</label>
+                                                            <span className="font-mono text-white/60 text-xs tabular-nums">{settings.saturation}%</span>
+                                                        </div>
+                                                        <Slider
+                                                            value={[settings.saturation]}
+                                                            onValueChange={([value]) => updateSetting("saturation", value)}
+                                                            max={200}
+                                                            min={0}
+                                                            step={5}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between">
+                                                            <label className="text-white/80 text-sm">Blur</label>
+                                                            <span className="font-mono text-white/60 text-xs tabular-nums">{settings.blur}px</span>
+                                                        </div>
+                                                        <Slider
+                                                            value={[settings.blur]}
+                                                            onValueChange={([value]) => updateSetting("blur", value)}
+                                                            max={10}
+                                                            min={0}
+                                                            step={0.5}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </PopoverContent>
+                            </Popover>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </>
     )
 }

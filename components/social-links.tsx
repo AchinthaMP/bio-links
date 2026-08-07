@@ -1,9 +1,10 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import { SocialButton } from "@/components/ui/social-button"
 import { Github } from "lucide-react"
 import { FaSteam, FaSpotify, FaYoutube, FaTiktok } from "react-icons/fa"
+import Magnetic from "@/components/Magnetic"
 
 interface SocialLinksProps {
   links?: {
@@ -30,17 +31,37 @@ export function SocialLinks({ links = defaultLinks, delay = 1 }: SocialLinksProp
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay, duration: 0.6 }}
-      className="flex justify-center space-x-4"
+      className="flex justify-center flex-wrap gap-3"
     >
-      {links.github && <SocialButton href={links.github} icon={Github} label="GitHub" variant="github" />}
+      {links.github && (
+        <Magnetic strength={0.3}>
+          <SocialButton href={links.github} icon={Github} label="GitHub" variant="github" />
+        </Magnetic>
+      )}
 
-      {links.steam && <SocialButton href={links.steam} icon={FaSteam} label="Steam" variant="steam" />}
+      {links.steam && (
+        <Magnetic strength={0.3}>
+          <SocialButton href={links.steam} icon={FaSteam} label="Steam" variant="steam" />
+        </Magnetic>
+      )}
 
-      {links.spotify && <SocialButton href={links.spotify} icon={FaSpotify} label="Spotify" variant="spotify" />}
+      {links.spotify && (
+        <Magnetic strength={0.3}>
+          <SocialButton href={links.spotify} icon={FaSpotify} label="Spotify" variant="spotify" />
+        </Magnetic>
+      )}
 
-      {links.youtube && <SocialButton href={links.youtube} icon={FaYoutube} label="YouTube" variant="youtube" />}
+      {links.youtube && (
+        <Magnetic strength={0.3}>
+          <SocialButton href={links.youtube} icon={FaYoutube} label="YouTube" variant="youtube" />
+        </Magnetic>
+      )}
 
-      {links.tiktok && <SocialButton href={links.tiktok} icon={FaTiktok} label="TikTok" variant="tiktok" />}
+      {links.tiktok && (
+        <Magnetic strength={0.3}>
+          <SocialButton href={links.tiktok} icon={FaTiktok} label="TikTok" variant="tiktok" />
+        </Magnetic>
+      )}
     </motion.div>
   )
 }

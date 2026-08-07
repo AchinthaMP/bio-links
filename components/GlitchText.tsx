@@ -1,7 +1,7 @@
-"use client"
+﻿"use client"
 
 import React, { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 
 interface GlitchTextProps {
   text: string
@@ -21,10 +21,10 @@ export default function GlitchText({ text, className = "" }: GlitchTextProps) {
       <span className={`relative z-10 block ${className}`}>{text}</span>
       
       {/* Glitch Layers */}
-      <span className={`absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-70 z-0 text-blue-500 pointer-events-none translate-x-[2px] translate-y-[-1px] transition-opacity duration-200 ${className} !bg-none !text-blue-500`}>
+      <span className={`absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-70 z-0 text-purple-400 pointer-events-none translate-x-[2px] translate-y-[-1px] transition-opacity duration-200 ${className} !bg-none !text-purple-400`}>
         {text}
       </span>
-      <span className={`absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-70 z-0 text-red-500 pointer-events-none translate-x-[-2px] translate-y-[1px] transition-opacity duration-200 ${className} !bg-none !text-red-500`}>
+      <span className={`absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-70 z-0 text-white/70 pointer-events-none translate-x-[-2px] translate-y-[1px] transition-opacity duration-200 ${className} !bg-none !text-white/70`}>
         {text}
       </span>
 
@@ -32,7 +32,7 @@ export default function GlitchText({ text, className = "" }: GlitchTextProps) {
       {isHovered && (
         <>
           <motion.span
-            className={`absolute top-0 left-0 w-full h-full opacity-50 z-[1] !bg-none text-blue-400`}
+            className={`absolute top-0 left-0 w-full h-full opacity-50 z-[1] !bg-none text-purple-300`}
             animate={{
               x: [-1, 2, -2, 1, 0],
               y: [1, -1, 1, 0, -1],
@@ -48,7 +48,7 @@ export default function GlitchText({ text, className = "" }: GlitchTextProps) {
             {text}
           </motion.span>
           <motion.span
-            className={`absolute top-0 left-0 w-full h-full opacity-50 z-[1] !bg-none text-red-400`}
+            className={`absolute top-0 left-0 w-full h-full opacity-50 z-[1] !bg-none text-white/60`}
             animate={{
               x: [1, -2, 2, -1, 0],
               y: [-1, 1, -1, 0, 1],
